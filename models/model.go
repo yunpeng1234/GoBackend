@@ -1,14 +1,7 @@
 package models
 
-type Teacher struct {
-	Email string `db:"Email"`
-}
-
 type Student struct {
-	Email   string `"db:"Email"`
-	Teacher string `db:TeacherEmail`
-}
-
-type Suspended struct {
-	Email string `"db:"Email"`
+	Email       string `xorm:"varchar(256) not null pk 'email'"`
+	Teacher     string `xorm:"varchar(256) 'teacher'"`
+	IsSuspended bool   `xorm:"bool 'is_suspended'"`
 }

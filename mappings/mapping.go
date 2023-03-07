@@ -1,7 +1,7 @@
 package mappings
 
 import (
-	"github.com/yunpeng1234/go-api/GoBackend/controllers"
+	"github.com/yunpeng1234/GoBackend/controllers"
 
 	"github.com/gin-gonic/gin"
 )
@@ -13,9 +13,9 @@ func CreateUrlMappings() {
 	Router.Use(controllers.Cors())
 	api := Router.Group("/api")
 	{
-		api.POST("/register", controllers.registerStudent)
-		api.GET("/commonstudents", controllers.getCommonStudents)
-		api.POST("/suspend", controllers.suspendStudent)
-		api.POST("/retrievefornotifications", controllers.retrieveNotifications)
+		api.POST("/register", controllers.RegisterStudent)
+		api.GET("/commonstudents", controllers.GetCommonStudents)
+		api.POST("/suspend", controllers.SuspendStudent)
+		api.POST("/retrievefornotifications", controllers.RetrieveNotifications)
 	}
 }
