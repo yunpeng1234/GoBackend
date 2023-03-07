@@ -5,11 +5,32 @@ import (
 	"strings"
 
 	"github.com/yunpeng1234/GoBackend/models"
-	"xorm.io/xorm"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 )
+
+func intersect(a []models.Student, b []models.Student) []models.Student {
+	set := make([]models.Student, 0)
+
+	for _, v := range a {
+		if contains(b, v) {
+			set = append(set, v)
+		}
+	}
+
+	return set
+}
+
+func contains(s []models.Student, stu models.Student) bool {
+	for _, v := range s {
+		if v.Email == stu.Email {
+			return true
+		}
+	}
+
+	return false
+}
 
 // GET /api/commonstudents?teacher=teacherken%40gmail.com
 func GetCommonStudents(c *gin.Context) {
@@ -20,16 +41,16 @@ func GetCommonStudents(c *gin.Context) {
 	} else {
 		c.JSON(400, gin.H{"message": "Bad Request"})
 	}
-	var tempEngine *xorm.Session
 	var students []models.Student
+	var tempStudents []models.Student
 	fmt.Println(teachers)
 	if len(teachers) >= 1 {
-		tempEngine = Engine.Where("teacher=?", teachers[0])
+		err := Engine.Table("Student").Where("teacher=?", teachers[0]).Find(&students)
 
 		for i := 1; i < len(teachers); i++ {
-			tempEngine = tempEngine.And("teacher=?", teachers[i])
+			_ = Engine.Table("Student").Where("teacher=?", teachers[i]).Find(&tempStudents)
+			students = intersect(students, tempStudents)
 		}
-		err := tempEngine.Find(&students)
 		if err != nil {
 			c.JSON(404, gin.H{"error": "user not found"})
 		}
@@ -65,9 +86,10 @@ func RegisterStudent(c *gin.Context) {
 		var newStudent = models.Student{}
 		newStudent.Email = value
 		newStudent.Teacher = teacherEmail
-		newStudent.IsSuspended = false
-		if _, err4 := Engine.Insert(&newStudent); err4 != nil {
+		if test, err4 := Engine.Table("Student").Insert(&newStudent); err4 == nil {
+			fmt.Println(test)
 		} else {
+			fmt.Println(test)
 			fmt.Println(err4)
 			session.Rollback()
 			c.JSON(404, gin.H{"error": "Unable to register student"})
@@ -90,10 +112,9 @@ func SuspendStudent(c *gin.Context) {
 	}
 	fmt.Println(reqBody)
 	var student = reqBody.Student
-	var newStudent = models.Student{}
+	var newStudent = models.Suspend{}
 	newStudent.Email = student
-	newStudent.IsSuspended = true
-	_, err := Engine.ID(student).Update(newStudent)
+	_, err := Engine.Table("Suspend").Insert(&newStudent)
 	if err == nil {
 		c.JSON(200, "")
 	} else {
@@ -120,13 +141,26 @@ func RetrieveNotifications(c *gin.Context) {
 	var teacher = reqBody.Teacher
 	var studentEmail []string
 	var students []models.Student
-	err := Engine.Where("student.teacher=?", teacher).And("student.is_suspended=false").Find(&students)
+	var temp []models.Suspend
+	var tempS models.Suspend
+	var nonSuspendedStudents []models.Student
+	err := Engine.Table("Student").Where("teacher=?", teacher).Find(&students)
 	if err != nil {
 		c.JSON(500, "Server unavailable")
 	}
+	errT := Engine.Table("Suspend").Find(&temp)
+	fmt.Println(errT)
+	fmt.Println(temp)
+	for _, val := range students {
+		has, _ := Engine.Table("Suspend").ID(val.Email).Get(&tempS)
+		if !has {
+			nonSuspendedStudents = append(nonSuspendedStudents, val)
+		}
+	}
+	fmt.Println(nonSuspendedStudents)
 	studentEmail = getEmails(notifEmail)
-	for i := 0; i < len(students); i++ {
-		studentEmail = append(studentEmail, students[i].Email)
+	for i := 0; i < len(nonSuspendedStudents); i++ {
+		studentEmail = append(studentEmail, nonSuspendedStudents[i].Email)
 	}
 
 	c.JSON(200, gin.H{"recipients": studentEmail})

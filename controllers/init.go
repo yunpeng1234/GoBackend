@@ -24,9 +24,20 @@ func InitDb() *xorm.Engine {
 	Engine = engine
 	fmt.Println("Faggggot")
 	checkErr(err, "sql.Open failed")
+	Engine.DropTables("Student")
+	Engine.DropTables("Suspend")
 	if isExist, err := Engine.IsTableExist("Student"); err == nil {
 		if !isExist {
 			err2 := Engine.CreateTables(models.Student{})
+			fmt.Println(err2)
+
+		}
+	} else {
+		fmt.Println(err)
+	}
+	if isExist, err := Engine.IsTableExist("Suspend"); err == nil {
+		if !isExist {
+			err2 := Engine.CreateTables(models.Suspend{})
 			fmt.Println(err2)
 
 		}
