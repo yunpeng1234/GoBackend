@@ -20,7 +20,7 @@ func InitDb() *xorm.Engine {
 	name := os.Getenv("DB_NAME")
 	dsn := fmt.Sprintf("%s:%s@tcp(localhost:%s)/%s", user, pw, port, name)
 	fmt.Println(dsn)
-	engine, err := xorm.NewEngine("mysql", "root:1234@tcp(localhost:3306)/test")
+	engine, err := xorm.NewEngine("mysql", dsn)
 	Engine = engine
 	fmt.Println("Faggggot")
 	checkErr(err, "sql.Open failed")
