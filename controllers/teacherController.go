@@ -32,6 +32,18 @@ func contains(s []models.Student, stu models.Student) bool {
 	return false
 }
 
+func removeDuplicateStr(strSlice []string) []string {
+	allKeys := make(map[string]bool)
+	list := []string{}
+	for _, item := range strSlice {
+		if _, value := allKeys[item]; !value {
+			allKeys[item] = true
+			list = append(list, item)
+		}
+	}
+	return list
+}
+
 // GET /api/commonstudents?teacher=teacherken%40gmail.com
 func GetCommonStudents(c *gin.Context) {
 	vals := c.Request.URL.Query()
@@ -162,6 +174,6 @@ func RetrieveNotifications(c *gin.Context) {
 	for i := 0; i < len(nonSuspendedStudents); i++ {
 		studentEmail = append(studentEmail, nonSuspendedStudents[i].Email)
 	}
-
+	studentEmail = removeDuplicateStr(studentEmail)
 	c.JSON(200, gin.H{"recipients": studentEmail})
 }
