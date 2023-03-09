@@ -64,7 +64,7 @@ func GetCommonStudents(c *gin.Context) {
 			students = intersect(students, tempStudents)
 		}
 		if err != nil {
-			c.JSON(404, gin.H{"error": "user not found"})
+			c.JSON(404, gin.H{"message": "User not found"})
 		}
 	}
 	fmt.Print(students)
@@ -104,7 +104,7 @@ func RegisterStudent(c *gin.Context) {
 			fmt.Println(test)
 			fmt.Println(err4)
 			session.Rollback()
-			c.JSON(404, gin.H{"error": "Unable to register student"})
+			c.JSON(404, gin.H{"message": "Unable to register student"})
 			return
 		}
 	}
@@ -130,7 +130,7 @@ func SuspendStudent(c *gin.Context) {
 	if err == nil {
 		c.JSON(200, "")
 	} else {
-		c.JSON(500, gin.H{"error": "Unable to suspend student"})
+		c.JSON(500, gin.H{"message": "Unable to suspend student"})
 	}
 }
 
@@ -158,7 +158,7 @@ func RetrieveNotifications(c *gin.Context) {
 	var nonSuspendedStudents []models.Student
 	err := Engine.Table("Student").Where("teacher=?", teacher).Find(&students)
 	if err != nil {
-		c.JSON(500, "Server unavailable")
+		c.JSON(500, gin.H{"message": "Server unavailable"})
 	}
 	errT := Engine.Table("Suspend").Find(&temp)
 	fmt.Println(errT)

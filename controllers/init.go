@@ -22,7 +22,6 @@ func InitDb() *xorm.Engine {
 	fmt.Println(dsn)
 	engine, err := xorm.NewEngine("mysql", dsn)
 	Engine = engine
-	fmt.Println("Faggggot")
 	checkErr(err, "sql.Open failed")
 	Engine.DropTables("Student")
 	Engine.DropTables("Suspend")
@@ -58,4 +57,9 @@ func Cors() gin.HandlerFunc {
 		c.Writer.Header().Add("Access-Control-Allow-Origin", "*")
 		c.Next()
 	}
+}
+
+func TearDown() {
+	Engine.DropTables("Student")
+	Engine.DropTables("Suspend")
 }
