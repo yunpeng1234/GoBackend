@@ -1,11 +1,14 @@
 package controllers
 
 import (
+	"bytes"
+	"encoding/json"
+	"fmt"
 	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/yunpeng1234/GoBackend/main"
 )
 
 type RegisterBody struct {
@@ -23,29 +26,61 @@ type NotificationBody struct {
 }
 
 func TestRegister(t *testing.T) {
+	router := SetUpRouter()
 	body := RegisterBody{"a", []string{"b", "c"}}
-	writer := main.MakeRequest("POST", "/api/register", body)
-	assert.Equal(t, 204, writer.Code)
+
+	w := httptest.NewRecorder()
+	var buf bytes.Buffer
+	err := json.NewEncoder(&buf).Encode(body)
+	if err != nil {
+		fmt.Println(err)
+	}
+	req, _ := http.NewRequest("POST", "/api/register", &buf)
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, 204, w.Code)
+	assert.Equal(t, "", w.Body.String())
 }
 
 func TestRetrieveCommonStudents(t *testing.T) {
-	writer := main.MakeRequest("GET", "/api/commonstudents?teacher=a", nil)
+	router := SetUpRouter()
 
-	assert.Equal(t, http.StatusOK, writer.Code)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/api/commonstudents?teacher=a", nil)
+	router.ServeHTTP(w, req)
+	assert.Equal(t, 200, w.Code)
+	assert.Equal(t, "pong", w.Body.String())
 }
 
 func TestSuspendStudent(t *testing.T) {
+	router := SetUpRouter()
 	body := SuspendBody{"a"}
 
-	writer := main.MakeRequest("POST", "/api/suspend", body)
+	w := httptest.NewRecorder()
+	var buf bytes.Buffer
+	err := json.NewEncoder(&buf).Encode(body)
+	if err != nil {
+		fmt.Println(err)
+	}
+	req, _ := http.NewRequest("POST", "/api/suspend", &buf)
+	router.ServeHTTP(w, req)
 
-	assert.Equal(t, http.StatusOK, writer.Code)
+	assert.Equal(t, 204, w.Code)
+	assert.Equal(t, "", w.Body.String())
 }
 
 func TestGetNotification(t *testing.T) {
+	router := SetUpRouter()
 	body := NotificationBody{"a", "a @b @d"}
+	w := httptest.NewRecorder()
+	var buf bytes.Buffer
+	err := json.NewEncoder(&buf).Encode(body)
+	if err != nil {
+		fmt.Println(err)
+	}
+	req, _ := http.NewRequest("POST", "/api/retrievenotification", &buf)
+	router.ServeHTTP(w, req)
 
-	writer := main.MakeRequest("POST", "/api/retrievenotification", body)
-
-	assert.Equal(t, http.StatusOK, writer.Code)
+	assert.Equal(t, 200, w.Code)
+	assert.Equal(t, "pong", w.Body.String())
 }
